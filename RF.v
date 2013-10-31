@@ -39,7 +39,3 @@ assign RData1 = ((WAddr == RAddr1) && (WAddr != 0 && WAddr != 15)) ? WData : Reg
 assign RData2 = ((WAddr == RAddr2) && (WAddr != 0 && WAddr != 15)) ? WData : RegFile[RAddr2];
 
 endmodule
-<<<<<<< HEAD
-=======
-
->>>>>>> ee8633ed5373269252998f06fcfbc5311e8a8958
