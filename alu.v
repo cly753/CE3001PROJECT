@@ -38,4 +38,8 @@ always @(posedge clk) begin
 	end
 end
 
+<<<<<<< HEAD
 endmodule
+=======
+endmodule
+>>>>>>> ee8633ed5373269252998f06fcfbc5311e8a8958
