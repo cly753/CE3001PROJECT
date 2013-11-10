@@ -21,7 +21,12 @@ module D_memory(
     begin
       if ( rst )  begin
           addr_inc = 0;
-          D_init = $fopen("D_memory_init.txt","r");
+
+          //========
+          //D_init = $fopen("D_memory_init.txt","r");
+          D_init = $fopen("D_memory_init.v","r");
+          //========
+
           $display("here!!!!!");
           
           while(!$feof(D_init)) begin
@@ -32,7 +37,12 @@ module D_memory(
               else begin
                   // Push the character back to the file then read the next time
                   r = $ungetc(c, D_init);
-                  r = $fscanf(D_init, "%h", memory[addr_inc]);
+
+                  //========
+                  r = $fscanf(D_init, "%b", memory[addr_inc]); // use decimal in test data
+                  //r = $fscanf(D_init, "%h", memory[addr_inc]);
+                  //========
+
                   addr_inc = addr_inc + 1;
               end
           end
@@ -41,7 +51,7 @@ module D_memory(
               memory[i] = 16'h0000;
           end
       end else begin
-          if (!write_en) begin            // active-low write enable
+          if (write_en) begin            // active-low write enable
               memory[address] <= data_in;
           end
           data_out <= memory[address];

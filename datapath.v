@@ -7,14 +7,14 @@ module datapath(clk,rst);
   wire [`DSIZE-1:0] WData,RData1,RData2;
   wire [`DSIZE-1:0] AOut,Adata1_in,Adata2_in,Sextend_out,Zextend_out;
   wire [`RSIZE-1:0] RAddr1,RAddr2,WAddr;
-  wire [`RSIZE-1:0] /*Aop,*/imm;
-  wire [2:0] ALUop, Aop; // Aop should be 3 bit right?
+  wire [`RSIZE-1:0] imm;
+  wire [3:0] ALUop, Aop;
   
   wire Dwrite_en,RFwen,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10; 
   wire WriteEn,MemEn;
   wire [`DSIZE-1:0] s1_out,s2_out,s3_out,s5_out,s6_out,s7_out,s8_out,s10_out;
   wire [`DSIZE-1:0] LHBout;
-  wire [`RSIZE-1:0] s4_out,s9_out,sL_out;
+  wire [`DSIZE-1:0] s4_out,s9_out,sL_out,sI_out;
   wire [10:0] control_out;
   wire [2:0] flag;
   wire [7:0] LHBimm;
@@ -22,19 +22,14 @@ module datapath(clk,rst);
   reg s51,s61,s71,s72,s81,s82,s83,sL1,sL2;
   reg WriteEn1,WriteEn2,WriteEn3,MemEn1,MemEn2;
   reg [`RSIZE-1:0]s4_out1,s4_out2,s4_out3,imm1;
-  reg [2:0] ALUop1;
-  reg [`ISIZE-1:0]PC,IF_PCplus11,IF_PCplus12,IF_PCplus13;
-  reg [`DSIZE-1:0]RData11,s7_out1,Sextend_out1;
+  reg [3:0] ALUop1;
+  reg [`ISIZE-1:0]PC,IF_PCplus11,IF_PCplus12;
+  reg [`DSIZE-1:0]RData11,s7_out1,Sextend_out1,Zextend_out1;
   reg [7:0] LHBimm1; 
   reg rstControl;
-  
-  // always @* begin
-  //   if (rst) begin
-  //     $display("initialize PC!!!");
-  //     PC = 16'b1111_1111_1111_1111;
-  //     $display("PC: %d", PC);
-  //   end
-  // end
+  reg [`DSIZE-1:0] RData12,RData21;
+
+
   
   
 //instatiate block I-memory, register file, alu, D-memory,control block
@@ -52,17 +47,17 @@ D_memory dm(
   .rst(rst),
   .write_en(Dwrite_en));
 Reg_File rf(
-    .Clock(clk), .Reset(rst),.Wen(RFwen),
-    .RAddr1(RAddr1),.RAddr2(RAddr2),.WAddr(WAddr),
-    .WData(WData), 
-    .RData1(RData1),.RData2(RData2)
-    );
+	.Clock(clk), .Reset(rst),.Wen(RFwen),
+	.RAddr1(RAddr1),.RAddr2(RAddr2),.WAddr(WAddr),
+	.WData(WData), 
+	.RData1(RData1),.RData2(RData2)
+	);
 alu al(
-    .Data1(Adata1_in), .Data2(Adata2_in),
-    .op(Aop),
-    .imm(imm1),
-    .clk(clk),
-     .Out(AOut),.flag(flag));
+	.Data1(Adata1_in), .Data2(Adata2_in),
+	.op(Aop),
+	.imm(imm1),
+	.clk(clk),
+	 .Out(AOut),.flag(flag));
 //control block to be implemented
 Control con(
   .control_input(Idata_out),
@@ -75,12 +70,14 @@ Control con(
   .flag(flag));
 
 LHBunit lhb(
-  .dataRd(RData1),
+  .dataRd(RData11),
   .imm(LHBimm1),
   .clk(clk),
   .out(LHBout));
+
 //sign extend and zero extend
-assign Sextend_out = (Idata_out[7])? {8'b11111111,Idata_out[7:0]}:Idata_out[7:0];
+//assign Sextend_out = (Idata_out[7])? {8'b11111111,Idata_out[7:0]}:Idata_out[7:0];
+assign Sextend_out = $signed(Idata_out[7:0]);
 assign Zextend_out = Idata_out[11:0];
 
 //assign all selections
@@ -98,16 +95,18 @@ assign sL = control_out[10];
 
 // all selections
 assign s1_out = (s1)? s2_out:IF_PCplus1;
-assign s2_out = (s2)? RData1:s3_out;
-assign s3_out = (s3)? Zextend_out:(Sextend_out+IF_PCplus11);
+assign s2_out = (s2)? RData11:s3_out;
+assign s3_out = (s3)? Zextend_out1:(Sextend_out1+IF_PCplus11);
 assign s4_out = (s4)? 4'b1111:Idata_out[11:8];
-assign s5_out = (s51)? RData1:Sextend_out1;
-assign s6_out = (s61)? RData2:Sextend_out1;
-assign s7_out = (s72)? IF_PCplus13:sL_out;
+assign s5_out = (s51)? RData11:Sextend_out1;
+assign s6_out = (s61)? RData21:Sextend_out1;
+assign s7_out = (s72)? IF_PCplus12:sL_out;
 assign s8_out = (s83)? Ddata_out:s7_out1;
 assign s9_out = (s9)? Idata_out[11:8]:Idata_out[7:4];
 assign s10_out = (s10)? s1_out:IF_currPC;
 assign sL_out = (sL2)? AOut:LHBout;
+
+
 //wire into RF and Control
 assign RAddr1 = s9_out;
 assign RAddr2 = Idata_out[3:0];
@@ -124,7 +123,7 @@ assign IF_PCplus1=IF_currPC + 1'b1;
 assign Iaddress=s1_out;
 assign Adata1_in = s5_out;
 assign Adata2_in = s6_out;
-assign data_in = RData11;
+assign data_in = RData12;
 
 assign LHBimm=Idata_out[7:0];
 
@@ -141,9 +140,9 @@ begin
   sL1<=sL;
   sL2<=sL1;
   IF_PCplus11<=IF_PCplus1;
-  IF_PCplus12<=IF_PCplus11;
-  IF_PCplus13<=IF_PCplus12; 
+  IF_PCplus12<=IF_PCplus11;	
   Sextend_out1<=Sextend_out;
+  Zextend_out1<=Zextend_out;
   imm1<=imm;
   ALUop1<=ALUop;
   RData11<=RData1;
@@ -158,7 +157,8 @@ begin
   s7_out1<=s7_out;
   PC<=rst?16'b1111_1111_1111_1111:s10_out;
   LHBimm1<=LHBimm;
-  
+  RData12<=RData11;
+  RData21<=RData2;
 end
 endmodule
 
@@ -166,6 +166,7 @@ endmodule
 
 
 
-    
-     
+	
+	 
+
 

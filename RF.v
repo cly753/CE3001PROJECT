@@ -10,7 +10,7 @@ reg [`DSIZE-1:0] RegFile[0:15]; // RegFile[15] is Return Address register for JA
 
 always@(posedge Clock) begin
 	///////////////////////////////////////////////////////////////////////////////////////////// Active Low or High ??
-	if(!Reset) begin
+	if(Reset) begin
 		RegFile[0]  <= 0;
 		RegFile[1]  <= 0;
 		RegFile[2]  <= 0;

@@ -38,6 +38,6 @@
 `define BGE 3'b100
 `define BLE 3'b101
 `define BOF 3'b110
-`define True 3'b111
+`define TRUE 3'b111
 
 `endif

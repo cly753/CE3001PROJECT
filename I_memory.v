@@ -20,7 +20,11 @@ module I_memory(
             //step.1 initialize I-Mem with instructions in the text file
             addr_inc = 0;    // counter to track how many I-Mem entries have benn initialized
             
-            I_init = $fopen("I_memory_init.txt","r");
+            //========
+            //I_init = $fopen("I_memory_init.txt","r");
+            I_init = $fopen("I_memory_init.v","r");
+            //========
+
             while(!$feof(I_init)) begin
                 c = $fgetc(I_init);
                 // check for comment
@@ -29,7 +33,11 @@ module I_memory(
                 else begin
                     // Push the character back to the file then read the next time
                     r = $ungetc(c, I_init);
+
+                    //========
                     r = $fscanf(I_init, "%h", memory[addr_inc]);
+                    //========
+
                     addr_inc = addr_inc + 1;
                 end
             end
