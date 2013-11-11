@@ -40,7 +40,7 @@ always @(posedge clk) begin
 		flag[2] <= (tempOut == 16'd0);
 		// flag v
 		flag[1] <= (op==`ADD && (Data1[15]&&Data2[15]&&~tempOut[15] || ~Data1[15]&&~Data2[15]&&tempOut[15])) 
-				|| (op==`SUB && (Data1[15]&&~Data2[15]&&~tempOut[15] || ~Data1[15]&&Data2[15]&&tempOut[15]));
+				||(op==`SUB && (Data1[15]&&~Data2[15]&&~tempOut[15] || ~Data1[15]&&Data2[15]&&tempOut[15]))
 		if(op == `ADD || op == `SUB)
 			// flag N
 			flag[0] <= tempOut[15]&~flag[1];

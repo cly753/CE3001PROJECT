@@ -14,10 +14,11 @@ module datapath(clk,rst);
   wire WriteEn,MemEn;
   wire [`DSIZE-1:0] s1_out,s2_out,s3_out,s5_out,s6_out,s7_out,s8_out,s10_out;
   wire [`DSIZE-1:0] LHBout;
-  wire [`DSIZE-1:0] s4_out,s9_out,sL_out,sI_out;
+  wire [`DSIZE-1:0] s4_out,s9_out,sL_out,sm_out;
   wire [10:0] control_out;
   wire [2:0] flag;
   wire [7:0] LHBimm;
+  wire smart;
   
   reg s51,s61,s71,s72,s81,s82,s83,sL1,sL2;
   reg WriteEn1,WriteEn2,WriteEn3,MemEn1,MemEn2;
@@ -67,7 +68,9 @@ Control con(
   .ALUOp(ALUop),
   .sel(control_out),
   .rst(rst),
-  .flag(flag));
+  .flag(flag),
+  .smart(smart);
+  );
 
 LHBunit lhb(
   .dataRd(RData11),
@@ -105,6 +108,7 @@ assign s8_out = (s83)? Ddata_out:s7_out1;
 assign s9_out = (s9)? Idata_out[11:8]:Idata_out[7:4];
 assign s10_out = (s10)? s1_out:IF_currPC;
 assign sL_out = (sL2)? AOut:LHBout;
+assign sm_out = (smart) s10_out:s1_out; 
 
 
 //wire into RF and Control
@@ -120,7 +124,7 @@ assign WData = s8_out;
 assign Daddress=sL_out;
 assign IF_currPC=PC;
 assign IF_PCplus1=IF_currPC + 1'b1;
-assign Iaddress=s1_out;
+assign Iaddress=sm_out;
 assign Adata1_in = s5_out;
 assign Adata2_in = s6_out;
 assign data_in = RData12;
