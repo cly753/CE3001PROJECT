@@ -19,6 +19,10 @@ module datapath(clk,rst);
   wire [2:0] flag;
   wire [7:0] LHBimm;
   wire smart;
+
+  wire hazard; // cly
+
+
   
   reg s51,s61,s71,s72,s81,s82,s83,sL1,sL2;
   reg WriteEn1,WriteEn2,WriteEn3,MemEn1,MemEn2;
@@ -31,6 +35,7 @@ module datapath(clk,rst);
   reg [`DSIZE-1:0] RData12,RData21;
 
 
+hazardDetect(.instr_in(Idata_out), .clk(clk), .rst(rst), .hazard(hazard)); // cly
   
   
 //instatiate block I-memory, register file, alu, D-memory,control block
