@@ -25,7 +25,7 @@ module datapath(clk,rst);
   
   reg s51,s61,s71,s72,s81,s82,s83,sL1,sL2;
   reg WriteEn1,WriteEn2,WriteEn3,MemEn1,MemEn2;
-  reg [`RSIZE-1:0]s4_out1,s4_out2,s4_out3,imm1,RAddr21;
+  reg [`RSIZE-1:0]s4_out1,s4_out2,s4_out3,imm1,RAddr11;
   reg [3:0] ALUop1;
   reg [`ISIZE-1:0]PC,IF_PCplus11,IF_PCplus12;
   reg [`DSIZE-1:0]RData11,s7_out1,Sextend_out1,Zextend_out1;
@@ -33,7 +33,7 @@ module datapath(clk,rst);
   reg rstControl;
   reg [`DSIZE-1:0] RData12,RData21;
 // data forwarding
-  reg [`RSIZE-1:0] s9_out1/*,Rs1*/;
+  reg [`RSIZE-1:0] s9_out1;
   
 //instatiate block I-memory, register file, alu, D-memory,control block
 I_memory im(
@@ -75,7 +75,7 @@ Control con(
   );
 
 LHBunit lhb(
-  .dataRd(DFs1_out),
+  .dataRd(DFs2_out),
   .imm(LHBimm1),
   .clk(clk),
   .out(LHBout)
@@ -107,7 +107,7 @@ assign sL = control_out[10];
 
 // all selections
 assign s1_out = (s1)? s2_out:IF_PCplus1;
-assign s2_out = (s2)? DFs1_out:s3_out;
+assign s2_out = (s2)? DFs2_out:s3_out;
 assign s3_out = (s3)? Zextend_out1:(Sextend_out1+IF_PCplus11);
 assign s4_out = (s4)? 4'b1111:Idata_out[11:8];
 assign s5_out = (s51)? DFs1_out:Sextend_out1;
@@ -120,8 +120,8 @@ assign sL_out = (sL2)? AOut:LHBout;
 assign sh_out = (hazard)? IF_currPC:s1_out; 
 
 //wire into RF and Control
-assign RAddr1 = s9_out;
-assign RAddr2 = Idata_out[7:4];
+assign RAddr1 = Idata_out[7:4]; // -cly            
+assign RAddr2 = s9_out; // -cly
 assign imm = RAddr2;
 assign Aop = ALUop1;
 assign RFwen = WriteEn3;
@@ -135,12 +135,12 @@ assign IF_PCplus1=IF_currPC + 1'b1;
 assign Iaddress=sh_out;
 assign Adata1_in = s5_out;
 assign Adata2_in = s6_out;
-assign data_in = RData12;
+assign data_in = DFs2_out;
 
 //data forwarding mux
 
-assign DFs1_out = (WriteEn2 && s4_out2 == s9_out1)? sL_out:(WriteEn3 && s4_out3 == s9_out1)? s8_out:RData11; 
-assign DFs2_out = (WriteEn2 && s4_out2 == RAddr21)? sL_out:(WriteEn3 && s4_out3 == RAddr21)? s8_out:RData21;
+assign DFs1_out = (WriteEn2 && s4_out2 == RAddr11)? sL_out:(WriteEn3 && s4_out3 == RAddr11)? s8_out:RData11; 
+assign DFs2_out = (WriteEn2 && s4_out2 == s9_out1)? sL_out:(WriteEn3 && s4_out3 == s9_out1)? s8_out:RData21;
 
 
 
@@ -180,7 +180,7 @@ begin
   RData12<=DFs1_out;
   RData21<=RData2;
   //Rs1 <= Idata_out[3:0]; // what is this? -cly
-  RAddr21<=RAddr2; // -cly
+  RAddr11<=RAddr1; // -cly
   s9_out1<=s9_out;  
 end
 endmodule
