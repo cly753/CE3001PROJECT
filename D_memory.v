@@ -39,7 +39,7 @@ module D_memory(
                   r = $ungetc(c, D_init);
 
                   //========
-                  r = $fscanf(D_init, "%b", memory[addr_inc]); // use decimal in test data
+                  r = $fscanf(D_init, "%d", memory[addr_inc]); // use decimal in test data
                   //r = $fscanf(D_init, "%h", memory[addr_inc]);
                   //========
 

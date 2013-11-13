@@ -5,7 +5,7 @@ module hazardDetect(input [15:0] instr_in, input clk, input rst, output reg haza
 reg [15:0] instr[0:3]; // instr[0] -> current instruction // instr[1] -> last instruction and so on
 reg destination [0:3]; // destination[i] records whether instr[i] writes to a storage unit (either RF or D-mem)
 
-always @(posedge clk or posedge rst) begin
+always @(posedge clk) begin
     if (rst) begin
         instr[0] = 16'd0;
         instr[1] = 16'd0;
@@ -16,7 +16,7 @@ always @(posedge clk or posedge rst) begin
         destination[2] = 1'b0;
         destination[3] = 1'b0;
     end
-    else if(!hazard) begin
+    else begin
         instr[1] <= instr[0];
         instr[2] <= instr[1];
         instr[3] <= instr[2];
@@ -27,11 +27,13 @@ always @(posedge clk or posedge rst) begin
     end
 end
 
-always @* begin // ignore JAL
+always @* begin
     instr[0] = instr_in;
     if (instr[0][15] == 1'b0) begin // arithmetic operations will definately write to RF
         destination[0] = 1'b1;
-    end else if (instr[0][15:14] == 2'b10 && instr[0][15:12] != 4'b1001) begin // memory operation/load immediate write to RF or D-mem
+    end else if (instr[0][15:14] == 2'b10 && instr[0][15:12] != `SW) begin // LW LLB LHB will write to RF or D-mem
+        destination[0] = 1'b1;
+    end else if (instr[0][15:12] == `JAL) begin
         destination[0] = 1'b1;
     end
 end
@@ -66,4 +68,17 @@ always @* begin
         end
     end
 end
+
+//------------------------------------------------------------------------
+// version 2:
+// harzard detection based on only 1 history instruction
+//------------------------------------------------------------------------
+// always @* begin
+//     CU_stall = 0;       // active high, tell the control unit to stall the CPU
+//     CU_disable = 0;     // active high, tell the control unit to disable the current instruction in ID
+
+//     // if read instruction follows a LW instruction
+//     // tells ctrl_unit to stall and disable the current instruction
+//     if(instr[1][15:12] == `LW && instr[0] =  )
+
 endmodule

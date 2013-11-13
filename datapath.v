@@ -14,14 +14,13 @@ module datapath(clk,rst);
   wire WriteEn,MemEn;
   wire [`DSIZE-1:0] s1_out,s2_out,s3_out,s5_out,s6_out,s7_out,s8_out,s10_out;
   wire [`DSIZE-1:0] LHBout;
-  wire [`DSIZE-1:0] s4_out,s9_out,sL_out,sm_out;
+  wire [`DSIZE-1:0] s4_out,s9_out,sL_out, sh_out;
   wire [10:0] control_out;
   wire [2:0] flag;
   wire [7:0] LHBimm;
-  wire smart;
-
-  wire hazard; // cly
-
+  wire hazard; 
+  //data forwarding
+  wire [`DSIZE-1:0] DFs1_out,DFs2_out;
 
   
   reg s51,s61,s71,s72,s81,s82,s83,sL1,sL2;
@@ -33,10 +32,8 @@ module datapath(clk,rst);
   reg [7:0] LHBimm1; 
   reg rstControl;
   reg [`DSIZE-1:0] RData12,RData21;
-
-
-hazardDetect(.instr_in(Idata_out), .clk(clk), .rst(rst), .hazard(hazard)); // cly
-  
+// data forwarding
+  reg [`RSIZE-1:0] s9_out1,Rs1;
   
 //instatiate block I-memory, register file, alu, D-memory,control block
 I_memory im(
@@ -74,14 +71,21 @@ Control con(
   .sel(control_out),
   .rst(rst),
   .flag(flag),
-  .smart(smart);
+  .hazard(hazard)
   );
 
 LHBunit lhb(
-  .dataRd(RData11),
+  .dataRd(DFs1_out),
   .imm(LHBimm1),
   .clk(clk),
-  .out(LHBout));
+  .out(LHBout)
+  );
+hazardDetect hazDec (
+  .instr_in(Idata_out),
+  .clk(clk),
+  .rst(rst), 
+  .hazard(hazard)
+  );
 
 //sign extend and zero extend
 //assign Sextend_out = (Idata_out[7])? {8'b11111111,Idata_out[7:0]}:Idata_out[7:0];
@@ -103,22 +107,21 @@ assign sL = control_out[10];
 
 // all selections
 assign s1_out = (s1)? s2_out:IF_PCplus1;
-assign s2_out = (s2)? RData11:s3_out;
+assign s2_out = (s2)? DFs1_out:s3_out;
 assign s3_out = (s3)? Zextend_out1:(Sextend_out1+IF_PCplus11);
 assign s4_out = (s4)? 4'b1111:Idata_out[11:8];
-assign s5_out = (s51)? RData11:Sextend_out1;
-assign s6_out = (s61)? RData21:Sextend_out1;
+assign s5_out = (s51)? DFs1_out:Sextend_out1;
+assign s6_out = (s61)? DFs2_out:Sextend_out1;
 assign s7_out = (s72)? IF_PCplus12:sL_out;
 assign s8_out = (s83)? Ddata_out:s7_out1;
-assign s9_out = (s9)? Idata_out[11:8]:Idata_out[7:4];
+assign s9_out = (s9)? Idata_out[11:8]:Idata_out[3:0];
 assign s10_out = (s10)? s1_out:IF_currPC;
 assign sL_out = (sL2)? AOut:LHBout;
-assign sm_out = (smart) s10_out:s1_out; 
-
+assign sh_out = (hazard)? IF_currPC:s1_out; 
 
 //wire into RF and Control
 assign RAddr1 = s9_out;
-assign RAddr2 = Idata_out[3:0];
+assign RAddr2 = Idata_out[7:4];
 assign imm = RAddr2;
 assign Aop = ALUop1;
 assign RFwen = WriteEn3;
@@ -129,10 +132,18 @@ assign WData = s8_out;
 assign Daddress=sL_out;
 assign IF_currPC=PC;
 assign IF_PCplus1=IF_currPC + 1'b1;
-assign Iaddress=sm_out;
+assign Iaddress=sh_out;
 assign Adata1_in = s5_out;
 assign Adata2_in = s6_out;
 assign data_in = RData12;
+
+//data forwarding mux
+
+assign DFs1_out = (WriteEn2&&s4_out2==s9_out1)? sL_out:(WriteEn3&&s4_out3==s9_out1)? s8_out:RData11); 
+assign DFs2_out = (WriteEn2&&s4_out2==Rs1)? sL_out:(WriteEn3&&s4_out3==Rs1)? s8_out:RData21);
+
+
+
 
 assign LHBimm=Idata_out[7:0];
 
@@ -166,8 +177,10 @@ begin
   s7_out1<=s7_out;
   PC<=rst?16'b1111_1111_1111_1111:s10_out;
   LHBimm1<=LHBimm;
-  RData12<=RData11;
+  RData12<=DFs1_out;
   RData21<=RData2;
+  Rs1 <= Idata_out[3:0];
+  s9_out1<=s9_out;  
 end
 endmodule
 
