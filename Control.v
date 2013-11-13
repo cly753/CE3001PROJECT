@@ -114,7 +114,7 @@ always @* begin
         lhb = 1'b1;
       end
       `LLB: begin
-        {sel, WriteEn, MemEn} = 13'b1_1_100000_110_10;
+        {sel, WriteEn, MemEn} = 13'b0_1_100000_110_10;
         lhb = 1'b0;
       end
       `B: begin

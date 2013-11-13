@@ -23,13 +23,14 @@ end
 always @* begin
     // if a instruction is preceeded by a LW, stall it
     //----------------------------------------------------------------
-    // notice:
-    //      probably it isn't worth telling whether the instruction following
-    //      LW is a read, or it reads from the same address that LW writes to
+    // responsibility:
+    //      "hazard" will be asserted when the current instruction follows a LW
+    //      and it reads from the same address that LW writes to
+    // hazard:
+    //      active-high signal to tell the control unit to disable the current
+    //      instruction and fetch the current instruction again in next cycle
     // tricks:
-    //      use a temp to prevent spike in signals, for example, if there are
-    //      2 consecutive high, without using this temp harzard would looke 
-    //      like ____|--||--|______ instead of _____|-----|_____
+    //      Appendix(a)
     //----------------------------------------------------------------
     temp = 1'b0;
     if(instr[1][15:12] == `LW) begin
@@ -39,7 +40,7 @@ always @* begin
             temp = 1'b1;
         end else if (instr[0][15:12] == `LW && instr[0][7:4] == rd && instr[0][11:8] != rd) begin // LW SW
             temp = 1'b1;
-        end else if (instr[0][15:12] == `SW && instr[0][7:4] == rd) begin
+        end else if (instr[0][15:12] == `SW && (instr[0][7:4] == rd || instr[0][11:8])) begin
             temp = 1'b1;
         end else if (instr[0][15:12] == `LHB && instr[0][11:8] == rd) begin // LHB
             temp = 1'b1;
@@ -51,3 +52,10 @@ always @* begin
 end
 
 endmodule
+
+
+//----------------------------------------------------------------
+// Appendix:
+//      (a)use a temp to prevent spike in signals, for example, if there are
+//      2 consecutive high, without using this temp harzard would looke like
+//      ____|--||--|______ instead of _____|-----|_____

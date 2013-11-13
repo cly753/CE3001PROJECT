@@ -28,7 +28,7 @@ module datapath(clk,rst);
   reg WriteEn1,WriteEn2,WriteEn3,MemEn1,MemEn2;
   reg [`RSIZE-1:0]s4_out1,s4_out2,s4_out3,imm1,RAddr11;
   reg [3:0] ALUop1;
-  reg [15:0]PC,IF_PCplus11,IF_PCplus12;
+  reg [`ISIZE-1:0]PC,IF_PCplus11,IF_PCplus12;
   reg [`DSIZE-1:0]RData11,s7_out1,S8extend_out1,S12extend_out1,S4extend_out1;
   reg [7:0] LHBimm1; 
   reg rstControl;

@@ -6,7 +6,7 @@ module I_memory(
   input clk,
   input rst
 );
-  reg [`ISIZE-1:0] memory [0:2**`MEM_SPACE];
+  reg [`ISIZE-1:0] memory [0:2**`MEM_SPACE-1];
   reg [8*`MAX_LINE_LENGTH:0] line; /* Line of text read from file */
   integer I_init, addr_inc, i, c, r;
 
@@ -17,8 +17,7 @@ module I_memory(
             addr_inc = 0;    // counter to track how many I-Mem entries have benn initialized
             
             //========
-            //I_init = $fopen("I_memory_init.txt","r");
-            I_init = $fopen("I_memory_init_3.v","r");
+            I_init = $fopen("I_memory_init_temp.v","r");
             //========
 
             while(!$feof(I_init)) begin

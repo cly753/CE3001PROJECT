@@ -18,8 +18,7 @@ module D_memory(
           addr_inc = 0;
 
           //========
-          //D_init = $fopen("D_memory_init.txt","r");
-          D_init = $fopen("D_memory_init_3.v","r");
+          D_init = $fopen("D_memory_init_temp.v","r");
           //========
           
           while(!$feof(D_init)) begin
@@ -33,7 +32,6 @@ module D_memory(
 
                   //========
                   r = $fscanf(D_init, "%d", memory[addr_inc]);
-                  //r = $fscanf(D_init, "%h", memory[addr_inc]);
                   //========
                   $display("DM read line: %d", addr_inc);
 
