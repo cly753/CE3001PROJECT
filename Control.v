@@ -113,11 +113,7 @@ always @* begin
         {sel, WriteEn, MemEn} = 13'b1_1_111101_110_01;
       end
       `LHB: begin
-        if (hazard) begin
-          {sel, WriteEn, MemEn} = 13'b0_0_100010_110_00;
-        end else begin
           {sel, WriteEn, MemEn} = 13'b0_1_100010_110_10;
-        end
       end
       `LLB: begin
         {sel, WriteEn, MemEn} = 13'b1_1_100000_110_10;
@@ -206,6 +202,10 @@ always @* begin
       sel[9] = 1'b1;   // release PC
       WriteEn = 1'b0;
       MemEn = 1'b0;
+    end
+
+    if (hazard) begin
+      {sel[9], WriteEn, MemEn} = 13'b0_00;
     end
   end
 

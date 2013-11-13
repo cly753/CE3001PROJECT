@@ -10,10 +10,6 @@ module I_memory(
   reg [8*`MAX_LINE_LENGTH:0] line; /* Line of text read from file */
   integer I_init, addr_inc, i, c, r;
 
-  initial begin
-    
-  end
-
   always@(posedge clk or posedge rst) 
     begin
         if(rst) begin
@@ -37,6 +33,8 @@ module I_memory(
                     //========
                     r = $fscanf(I_init, "%h", memory[addr_inc]);
                     //========
+
+                    $display("IM read line: %d", addr_inc);
 
                     addr_inc = addr_inc + 1;
                 end

@@ -12,11 +12,6 @@ module D_memory(
   reg [8*`MAX_LINE_LENGTH:0] line; /* Line of text read from file */
   integer D_init, addr_inc, i, c, r;
 
-  initial begin
-    
-    $display("there!!!!!");
-  end
-
   always @(posedge clk or posedge rst) // rst: active high
     begin
       if ( rst )  begin
@@ -26,8 +21,6 @@ module D_memory(
           //D_init = $fopen("D_memory_init.txt","r");
           D_init = $fopen("D_memory_init.v","r");
           //========
-
-          $display("here!!!!!");
           
           while(!$feof(D_init)) begin
               c = $fgetc(D_init);
@@ -39,9 +32,10 @@ module D_memory(
                   r = $ungetc(c, D_init);
 
                   //========
-                  r = $fscanf(D_init, "%d", memory[addr_inc]); // use decimal in test data
+                  r = $fscanf(D_init, "%d", memory[addr_inc]);
                   //r = $fscanf(D_init, "%h", memory[addr_inc]);
                   //========
+                  $display("DM read line: %d", addr_inc);
 
                   addr_inc = addr_inc + 1;
               end

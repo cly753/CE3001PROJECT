@@ -25,7 +25,7 @@ module datapath(clk,rst);
   
   reg s51,s61,s71,s72,s81,s82,s83,sL1,sL2;
   reg WriteEn1,WriteEn2,WriteEn3,MemEn1,MemEn2;
-  reg [`RSIZE-1:0]s4_out1,s4_out2,s4_out3,imm1;
+  reg [`RSIZE-1:0]s4_out1,s4_out2,s4_out3,imm1,RAddr21;
   reg [3:0] ALUop1;
   reg [`ISIZE-1:0]PC,IF_PCplus11,IF_PCplus12;
   reg [`DSIZE-1:0]RData11,s7_out1,Sextend_out1,Zextend_out1;
@@ -33,7 +33,7 @@ module datapath(clk,rst);
   reg rstControl;
   reg [`DSIZE-1:0] RData12,RData21;
 // data forwarding
-  reg [`RSIZE-1:0] s9_out1,Rs1;
+  reg [`RSIZE-1:0] s9_out1/*,Rs1*/;
   
 //instatiate block I-memory, register file, alu, D-memory,control block
 I_memory im(
@@ -139,8 +139,8 @@ assign data_in = RData12;
 
 //data forwarding mux
 
-assign DFs1_out = (WriteEn2&&s4_out2==s9_out1)? sL_out:(WriteEn3&&s4_out3==s9_out1)? s8_out:RData11); 
-assign DFs2_out = (WriteEn2&&s4_out2==Rs1)? sL_out:(WriteEn3&&s4_out3==Rs1)? s8_out:RData21);
+assign DFs1_out = (WriteEn2 && s4_out2 == s9_out1)? sL_out:(WriteEn3 && s4_out3 == s9_out1)? s8_out:RData11; 
+assign DFs2_out = (WriteEn2 && s4_out2 == RAddr21)? sL_out:(WriteEn3 && s4_out3 == RAddr21)? s8_out:RData21;
 
 
 
@@ -179,7 +179,8 @@ begin
   LHBimm1<=LHBimm;
   RData12<=DFs1_out;
   RData21<=RData2;
-  Rs1 <= Idata_out[3:0];
+  //Rs1 <= Idata_out[3:0]; // what is this? -cly
+  RAddr21<=RAddr2; // -cly
   s9_out1<=s9_out;  
 end
 endmodule

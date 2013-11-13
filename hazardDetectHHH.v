@@ -1,6 +1,6 @@
 `include "define.v"
 
-module hazardDetect(input [15:0] instr_in, input clk, input rst, output reg hazard);
+module hazardDetectHHH(input [15:0] instr_in, input clk, input rst, output reg hazard);
 
 reg [15:0] instr[0:3]; // instr[0] -> current instruction // instr[1] -> last instruction and so on
 reg destination [0:3]; // destination[i] records whether instr[i] writes to a storage unit (either RF or D-mem)
