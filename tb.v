@@ -16,7 +16,7 @@ initial begin
   #1000
   rst = 1'b0;
 
-  #1600
+  #2000
   $finish;
 end
 endmodule

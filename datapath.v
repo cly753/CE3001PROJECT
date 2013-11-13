@@ -19,6 +19,7 @@ module datapath(clk,rst);
   wire [2:0] flag;
   wire [7:0] LHBimm;
   wire hazard; 
+
   //data forwarding
   wire [`DSIZE-1:0] DFs1_out,DFs2_out;
 
@@ -27,7 +28,7 @@ module datapath(clk,rst);
   reg WriteEn1,WriteEn2,WriteEn3,MemEn1,MemEn2;
   reg [`RSIZE-1:0]s4_out1,s4_out2,s4_out3,imm1,RAddr11;
   reg [3:0] ALUop1;
-  reg [`MEM_SPACE-1:0]PC,IF_PCplus11,IF_PCplus12;
+  reg [15:0]PC,IF_PCplus11,IF_PCplus12;
   reg [`DSIZE-1:0]RData11,s7_out1,S8extend_out1,S12extend_out1,S4extend_out1;
   reg [7:0] LHBimm1; 
   reg rstControl;
@@ -179,7 +180,9 @@ begin
   s4_out2<=s4_out1;
   s4_out3<=s4_out2;
   s7_out1<=s7_out;
+
   PC<=rst?16'b1111_1111_1111_1111:s10_out;
+
   LHBimm1<=LHBimm;
   RData12<=DFs1_out;
   RData21<=RData2;

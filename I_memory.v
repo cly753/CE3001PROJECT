@@ -18,7 +18,7 @@ module I_memory(
             
             //========
             //I_init = $fopen("I_memory_init.txt","r");
-            I_init = $fopen("I_memory_init.v","r");
+            I_init = $fopen("I_memory_init_3.v","r");
             //========
 
             while(!$feof(I_init)) begin

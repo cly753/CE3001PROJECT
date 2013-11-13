@@ -155,7 +155,7 @@ always @* begin
     //    actually refers to the resolution of B)
     //    
     // then:
-    //    path will be cleared for 
+    //    path will be cleared
     //------------------------------------------------------------
     if (instr[1][15:12] == `B && bResult == 1'b1) begin
       instr[0] = 16'd0;

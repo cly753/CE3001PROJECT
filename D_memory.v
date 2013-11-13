@@ -19,7 +19,7 @@ module D_memory(
 
           //========
           //D_init = $fopen("D_memory_init.txt","r");
-          D_init = $fopen("D_memory_init.v","r");
+          D_init = $fopen("D_memory_init_3.v","r");
           //========
           
           while(!$feof(D_init)) begin
