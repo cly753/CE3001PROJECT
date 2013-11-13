@@ -17,10 +17,7 @@ initial begin
   rst = 1'b0;
 
   #1600
-  
-  
   $finish;
 end
-
 endmodule
   
