@@ -3,22 +3,19 @@
 // smart is always 0? what;s the point
 
 module Control(input [15:0] control_input, input clk, input [2:0] flag, input rst, input hazard,
-    output reg WriteEn, output reg MemEn, output reg [3:0] ALUOp, output reg [10:0] sel); // if found a RAW, stop PC
+    output reg WriteEn, output reg MemEn, output reg [3:0] ALUOp, output reg [10:0] sel, output reg lhb); // if found a RAW, stop PC
 
     reg [3:0] opcode;
     reg bResult;
     reg bTemp;
-    //reg selLHB;
     reg [3:0] concode;
     reg [15:0] instr [2:0];
-
-    // parameter STOP = 14'b1_1_0_111111_110_00; // disable all, PC stops, next Iaddress = PC // {sel, WriteEn, MemEn} = STOP
 
     hazardDetect hd(.instr_in(control_input), .clk(clk), .rst(rst), .hazard(hazard));
 
 
-// shift register to record last 4 instruction in history
-always @(posedge clk) begin
+
+always @(posedge clk) begin // shift register recording last 2 instruction in history
   if (!hazard) begin
     instr[1] <= instr[0];
     instr[2] <= instr[1];
@@ -110,13 +107,15 @@ always @* begin
         {sel, WriteEn, MemEn} = 13'b1_1_011010_110_10;
       end
       `SW: begin
-        {sel, WriteEn, MemEn} = 13'b1_1_111101_110_01;
+        {sel, WriteEn, MemEn} = 13'b1_1_111011_110_01;
       end
       `LHB: begin
-          {sel, WriteEn, MemEn} = 13'b0_1_100010_110_10;
+        {sel, WriteEn, MemEn} = 13'b0_1_100010_110_10;
+        lhb = 1'b1;
       end
       `LLB: begin
         {sel, WriteEn, MemEn} = 13'b1_1_100000_110_10;
+        lhb = 1'b0;
       end
       `B: begin
         {sel, WriteEn, MemEn} = 13'b1_1_111111_110_00;
@@ -181,9 +180,8 @@ always @* begin
         WriteEn = 1'b0;
         MemEn = 1'b0;
     end
-    
-    // if last instruction is EXEC, 
-    if (instr[1][15:12] == `EXEC) begin
+
+    if (instr[1][15:12] == `EXEC) begin  // if last instruction is EXEC, 
         instr[0] = 16'd0;
         sel[0] = 1'b1;   // let PC <= JUMP
         sel[1] = 1'b1;   // 
@@ -192,8 +190,7 @@ always @* begin
         MemEn = 1'b0;
     end
     
-    // if last last instruction is EXEC
-    if (instr[2][15:12] == `EXEC) begin
+    if (instr[2][15:12] == `EXEC) begin  // if last last instruction is EXEC
       if (control_input[15:14] == 2'b11) begin
         instr[0] = 16'd0;
       end
@@ -204,16 +201,11 @@ always @* begin
       MemEn = 1'b0;
     end
 
-    if (hazard) begin
+    if (hazard) begin // flush current instruction (disable )
       {sel[9], WriteEn, MemEn} = 13'b0_00;
     end
   end
 
-  // if (hazard) begin
-  //   sel[9] = 1'b0;     // stall PC and disable current instruction
-  //   WriteEn = 1'b0;    
-  //   MemEn = 1'b0;
-  // end
 end
 
 endmodule

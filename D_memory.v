@@ -8,7 +8,7 @@ module D_memory(
   input rst,
   input write_en
 );
-  reg [`DSIZE-1:0] memory [0:2**`MEM_SPACE];
+  reg [`DSIZE-1:0] memory [0:2**`MEM_SPACE-1];
   reg [8*`MAX_LINE_LENGTH:0] line; /* Line of text read from file */
   integer D_init, addr_inc, i, c, r;
 
